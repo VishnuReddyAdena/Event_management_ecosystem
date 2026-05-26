@@ -1,0 +1,451 @@
+{
+  "users": [
+    {
+      "_id": "6a1479b5fdee13a0513c058a",
+      "tenantId": "6a1479b4752e0df1405f4bc3",
+      "name": "Dr. Sarah Jenkins",
+      "email": "organizer@platform.com",
+      "passwordHash": "$2a$10$km1JWEcwev8T6VBDiYyFhOBFBZvUZmZ2KSfJJu4xkkb640N8C6Lcy",
+      "role": "organizer",
+      "volunteerProfile": {
+        "skills": [],
+        "performanceScore": 0,
+        "achievements": [],
+        "assignedTasksCount": 0
+      },
+      "sponsorProfile": {
+        "companyName": "",
+        "industryVerticals": [],
+        "budgetCap": 0,
+        "activeSponsorships": []
+      },
+      "createdAt": "2026-05-25T16:32:53.139Z"
+    },
+    {
+      "_id": "6a1479b544b56f82d9c07949",
+      "tenantId": "6a1479b4752e0df1405f4bc3",
+      "name": "Alice Smith",
+      "email": "volunteer@platform.com",
+      "passwordHash": "$2a$10$km1JWEcwev8T6VBDiYyFhOBFBZvUZmZ2KSfJJu4xkkb640N8C6Lcy",
+      "role": "volunteer",
+      "volunteerProfile": {
+        "skills": [
+          "React",
+          "JavaScript",
+          "CSS",
+          "Social Media",
+          "Discord Moderation"
+        ],
+        "performanceScore": 98,
+        "achievements": [
+          "Bronze Organizer Helper",
+          "Silver Task Crusher"
+        ],
+        "assignedTasksCount": 2
+      },
+      "sponsorProfile": {
+        "companyName": "",
+        "industryVerticals": [],
+        "budgetCap": 0,
+        "activeSponsorships": []
+      },
+      "createdAt": "2026-05-25T16:32:53.140Z"
+    },
+    {
+      "_id": "6a1479b57618596cf420bf8c",
+      "tenantId": "6a1479b4752e0df1405f4bc3",
+      "name": "Bob Johnson",
+      "email": "bob.volunteer@platform.com",
+      "passwordHash": "$2a$10$km1JWEcwev8T6VBDiYyFhOBFBZvUZmZ2KSfJJu4xkkb640N8C6Lcy",
+      "role": "volunteer",
+      "volunteerProfile": {
+        "skills": [
+          "Python",
+          "Networking",
+          "Logistics",
+          "Event Hosting"
+        ],
+        "performanceScore": 100,
+        "achievements": [
+          "Bronze Organizer Helper",
+          "Network Ninja"
+        ],
+        "assignedTasksCount": 1
+      },
+      "sponsorProfile": {
+        "companyName": "",
+        "industryVerticals": [],
+        "budgetCap": 0,
+        "activeSponsorships": []
+      },
+      "createdAt": "2026-05-25T16:32:53.141Z"
+    },
+    {
+      "_id": "6a1479b5f9c014a6d73e5c6e",
+      "tenantId": "6a1479b4752e0df1405f4bc3",
+      "name": "Marcus Vance",
+      "email": "sponsor@platform.com",
+      "passwordHash": "$2a$10$km1JWEcwev8T6VBDiYyFhOBFBZvUZmZ2KSfJJu4xkkb640N8C6Lcy",
+      "role": "sponsor",
+      "volunteerProfile": {
+        "skills": [],
+        "performanceScore": 0,
+        "achievements": [],
+        "assignedTasksCount": 0
+      },
+      "sponsorProfile": {
+        "companyName": "Vanguard Tech Solutions",
+        "industryVerticals": [
+          "React",
+          "Node.js",
+          "Express",
+          "MongoDB"
+        ],
+        "budgetCap": 15000,
+        "activeSponsorships": [
+          "Global Tech Hackathon 2026"
+        ]
+      },
+      "createdAt": "2026-05-25T16:32:53.142Z"
+    },
+    {
+      "_id": "6a1479b576e667e9930ef26f",
+      "tenantId": "6a1479b4752e0df1405f4bc3",
+      "name": "John Doe",
+      "email": "participant@platform.com",
+      "passwordHash": "$2a$10$km1JWEcwev8T6VBDiYyFhOBFBZvUZmZ2KSfJJu4xkkb640N8C6Lcy",
+      "role": "participant",
+      "volunteerProfile": {
+        "skills": [],
+        "performanceScore": 0,
+        "achievements": [],
+        "assignedTasksCount": 0
+      },
+      "sponsorProfile": {
+        "companyName": "",
+        "industryVerticals": [],
+        "budgetCap": 0,
+        "activeSponsorships": []
+      },
+      "createdAt": "2026-05-25T16:32:53.143Z"
+    },
+    {
+      "_id": "6a1507d162cbafc7e0ef1da5",
+      "tenantId": "6a1479b4752e0df1405f4bc3",
+      "name": "Vishnureddy Adena",
+      "email": "participant@platformm.com",
+      "passwordHash": "$2a$10$vysuaypP5TaBScCXxiTSSevGfPBnkROnxcoK5i/LiNb42AcgeIzIW",
+      "role": "participant",
+      "volunteerProfile": {
+        "skills": [],
+        "performanceScore": 0,
+        "achievements": [],
+        "assignedTasksCount": 0
+      },
+      "sponsorProfile": {
+        "companyName": "",
+        "industryVerticals": [],
+        "budgetCap": 0,
+        "activeSponsorships": []
+      },
+      "participantProfile": {
+        "collegeName": "annamacharya university",
+        "collegeAddress": "12333",
+        "studentId": "E8",
+        "yearOfStudy": "4th Year"
+      },
+      "createdAt": "2026-05-26T02:39:13.408Z"
+    }
+  ],
+  "events": [
+    {
+      "_id": "6a1479b5df3167e146cb416d",
+      "organizationId": "6a1479b4752e0df1405f4bc3",
+      "title": "Global Tech Hackathon 2026",
+      "description": "A 36-hour intensive software building hackathon designed to create web apps that solve environmental issues. Free food, stickers, and $10k in prizes!",
+      "date": "2026-07-15",
+      "time": "09:00",
+      "venue": "Tech Auditorium, Building B",
+      "format": "hackathon",
+      "status": "Active",
+      "targetTechStack": [
+        "React",
+        "Node.js",
+        "Express",
+        "MongoDB",
+        "JavaScript"
+      ],
+      "eventDomains": [
+        "Web Development",
+        "Sustainability",
+        "Social good"
+      ],
+      "estimatedAttendees": 150,
+      "volunteersNeeded": 8,
+      "volunteers": [
+        "6a1479b544b56f82d9c07949",
+        "6a1479b57618596cf420bf8c"
+      ],
+      "participants": [
+        "6a1479b576e667e9930ef26f"
+      ],
+      "budget": {
+        "allocatedTotal": 10000,
+        "sponsorshipRevenue": 5000,
+        "operationalExpenses": 2500,
+        "items": [
+          {
+            "description": "Sponsorship - Platinum Tier",
+            "amount": 5000,
+            "type": "income"
+          },
+          {
+            "description": "Catering & Food Services",
+            "amount": 1500,
+            "type": "expense"
+          },
+          {
+            "description": "Swag (T-shirts, stickers)",
+            "amount": 1000,
+            "type": "expense"
+          }
+        ]
+      },
+      "createdAt": "2026-05-25T16:32:53.145Z"
+    },
+    {
+      "_id": "6a1479b577871e4f5a6cb5f6",
+      "organizationId": "6a1479b4752e0df1405f4bc3",
+      "title": "Advanced Web Dev & Glassmorphism",
+      "description": "Hands-on training session demonstrating next-gen UI building strategies, CSS filters, backdrop filters, and custom animation rendering in modern browsers.",
+      "date": "2026-06-10",
+      "time": "14:00",
+      "venue": "Online - Zoom Conference Link",
+      "format": "workshop",
+      "status": "Active",
+      "targetTechStack": [
+        "React",
+        "CSS",
+        "JavaScript"
+      ],
+      "eventDomains": [
+        "Web Development",
+        "UI/UX Design"
+      ],
+      "estimatedAttendees": 80,
+      "volunteersNeeded": 3,
+      "volunteers": [
+        "6a1479b544b56f82d9c07949"
+      ],
+      "participants": [
+        "6a1479b576e667e9930ef26f"
+      ],
+      "budget": {
+        "allocatedTotal": 1200,
+        "sponsorshipRevenue": 0,
+        "operationalExpenses": 150,
+        "items": [
+          {
+            "description": "Zoom Premium Subscription",
+            "amount": 50,
+            "type": "expense"
+          },
+          {
+            "description": "Digital Marketing Ads",
+            "amount": 100,
+            "type": "expense"
+          }
+        ]
+      },
+      "createdAt": "2026-05-25T16:32:53.149Z"
+    },
+    {
+      "_id": "6a1531a89e924e34a7518187",
+      "organizationId": "6a1479b4752e0df1405f4bc3",
+      "title": "hackathon",
+      "description": "code",
+      "date": "2026-05-26",
+      "time": "10:54",
+      "venue": "hyderabad",
+      "format": "hackathon",
+      "status": "Active",
+      "targetTechStack": [
+        "React",
+        "Node.js",
+        "Express",
+        "MongoDB"
+      ],
+      "eventDomains": [
+        "Web Development",
+        "Sustainability"
+      ],
+      "estimatedAttendees": 150,
+      "volunteersNeeded": 6,
+      "volunteers": [],
+      "participants": [],
+      "budget": {
+        "income": 0,
+        "expenses": 0,
+        "items": []
+      },
+      "createdAt": "2026-05-26T05:37:44.894Z"
+    }
+  ],
+  "tasks": [
+    {
+      "_id": "6a1479b5cd0511cb1cc5a688",
+      "eventId": "6a1479b5df3167e146cb416d",
+      "title": "Design Hackathon Web Landing Page",
+      "description": "Produce high fidelity layouts and visual designs incorporating black & white glassmorphism aesthetics.",
+      "status": "done",
+      "assignedTo": "6a1479b544b56f82d9c07949",
+      "order": 1000,
+      "pointValue": 15,
+      "createdAt": "2026-05-25T16:32:53.150Z"
+    },
+    {
+      "_id": "6a1479b522a98ce86e0d2f53",
+      "eventId": "6a1479b5df3167e146cb416d",
+      "title": "Setup Discord Server Channels",
+      "description": "Create channels, permissions, and set up role bots for hackathon participant onboarding.",
+      "status": "inProgress",
+      "assignedTo": "6a1479b544b56f82d9c07949",
+      "order": 2000,
+      "pointValue": 15,
+      "createdAt": "2026-05-25T16:32:53.151Z"
+    },
+    {
+      "_id": "6a1479b56e4b80b4fbcfbf05",
+      "eventId": "6a1479b5df3167e146cb416d",
+      "title": "Configure Networking Router Switches",
+      "description": "Configure high-performance routing hardware inside the university hall to handle 200 developers.",
+      "status": "inProgress",
+      "assignedTo": "6a1479b57618596cf420bf8c",
+      "order": 3000,
+      "pointValue": 15,
+      "createdAt": "2026-05-25T16:32:53.152Z"
+    },
+    {
+      "_id": "6a1479b54d2492e8fcb7f851",
+      "eventId": "6a1479b5df3167e146cb416d",
+      "title": "Coordinate Food Caterers",
+      "description": "Confirm menu details, delivery schedules, and vegetarian options with local restaurants.",
+      "status": "todo",
+      "assignedTo": null,
+      "order": 4000,
+      "pointValue": 15,
+      "createdAt": "2026-05-25T16:32:53.152Z"
+    },
+    {
+      "_id": "6a1479b5e05764c092df4881",
+      "eventId": "6a1479b577871e4f5a6cb5f6",
+      "title": "Zoom Moderation Setup",
+      "description": "Prepare session polls and structure chat moderation guidelines for speakers.",
+      "status": "todo",
+      "assignedTo": "6a1479b544b56f82d9c07949",
+      "order": 1000,
+      "pointValue": 15,
+      "createdAt": "2026-05-25T16:32:53.159Z"
+    }
+  ],
+  "applications": [
+    {
+      "_id": "6a1479b5d111e2705e6c8641",
+      "event": "6a1479b5df3167e146cb416d",
+      "user": "6a1479b544b56f82d9c07949",
+      "type": "volunteer",
+      "status": "approved",
+      "details": {
+        "message": "I have volunteered for 3 college fests. Excited to support!",
+        "skills": [
+          "React",
+          "CSS",
+          "Social Media"
+        ]
+      },
+      "createdAt": "2026-05-25T16:32:53.162Z"
+    },
+    {
+      "_id": "6a1479b57073ca6439a70b22",
+      "event": "6a1479b5df3167e146cb416d",
+      "user": "6a1479b57618596cf420bf8c",
+      "type": "volunteer",
+      "status": "approved",
+      "details": {
+        "message": "Networking and hardware enthusiast. Ready to Wi-Fi setup.",
+        "skills": [
+          "Networking",
+          "Logistics"
+        ]
+      },
+      "createdAt": "2026-05-25T16:32:53.163Z"
+    },
+    {
+      "_id": "6a15353ceae68e34c8f32b6d",
+      "event": "6a1531a89e924e34a7518187",
+      "user": "6a1479b544b56f82d9c07949",
+      "type": "volunteer",
+      "status": "pending",
+      "details": {
+        "message": "supporting",
+        "skills": [
+          "React",
+          "JavaScript",
+          "CSS",
+          "Social Media",
+          "Discord Moderation",
+          "Logistics",
+          "Event Hosting"
+        ]
+      },
+      "createdAt": "2026-05-26T05:53:00.812Z"
+    }
+  ],
+  "certificates": [
+    {
+      "_id": "6a1479b5507e78fa26d74a5a",
+      "eventId": "6a1479b577871e4f5a6cb5f6",
+      "userId": "6a1479b576e667e9930ef26f",
+      "code": "CERT-WOR-SPRING2026-A1B2C3",
+      "recipientName": "John Doe",
+      "eventName": "Spring Coding Sprint 2026",
+      "issuedAt": "2026-04-05T18:00:00.000Z",
+      "createdAt": "2026-05-25T16:32:53.165Z"
+    }
+  ],
+  "organizations": [
+    {
+      "_id": "6a1479b4752e0df1405f4bc3",
+      "name": "Tech University Organization",
+      "slug": "tech_university",
+      "tier": "Standard",
+      "createdAt": "2026-05-25T16:32:52.947Z"
+    }
+  ],
+  "tickets": [
+    {
+      "_id": "6a1479b56eda5aafea9d92cc",
+      "organizationId": "6a1479b4752e0df1405f4bc3",
+      "eventId": "6a1479b5df3167e146cb416d",
+      "attendeeId": "6a1479b576e667e9930ef26f",
+      "secureCheckInHash": "A5E12F98BD92348C37FE918B7362DF920193EAF98C224DE591EFE8A271FF391E",
+      "status": "Unused",
+      "createdAt": "2026-05-25T16:32:53.164Z"
+    }
+  ],
+  "sponsorshipdeals": [
+    {
+      "_id": "6a1479b54674ca54a39fd224",
+      "eventId": "6a1479b5df3167e146cb416d",
+      "sponsorId": "6a1479b5f9c014a6d73e5c6e",
+      "tierName": "Platinum Tier",
+      "financialCommitment": 5000,
+      "status": "Approved",
+      "roiMetrics": {
+        "impressionsCount": 1800,
+        "clicksRegistered": 240
+      },
+      "createdAt": "2026-05-25T16:32:53.164Z"
+    }
+  ]
+}
