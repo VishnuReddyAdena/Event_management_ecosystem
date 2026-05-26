@@ -92,6 +92,91 @@ export default function LandingPage() {
   ];
 
   // ──────────────────────────────────────────────────────────────────────────
+  // REGISTER POPUP MODAL STATE & ACTIONS
+  // ──────────────────────────────────────────────────────────────────────────
+  const [signupRole, setSignupRole] = useState(null); // null | 'organizer' | 'volunteer' | 'sponsor' | 'participant'
+  const [signupName, setSignupName] = useState('');
+  const [signupEmail, setSignupEmail] = useState('');
+  const [signupPassword, setSignupPassword] = useState('');
+  const [signupLoading, setSignupLoading] = useState(false);
+  const [signupError, setSignupError] = useState('');
+
+  // Role-specific fields
+  const [volunteerSkills, setVolunteerSkills] = useState('');
+  const [sponsorCompany, setSponsorCompany] = useState('');
+  const [sponsorIndustry, setSponsorIndustry] = useState('Tech & Software Development');
+  const [sponsorBudget, setSponsorBudget] = useState('5000');
+  const [participantCollegeName, setParticipantCollegeName] = useState('');
+  const [participantCollegeAddress, setParticipantCollegeAddress] = useState('');
+  const [participantStudentId, setParticipantStudentId] = useState('');
+  const [participantYear, setParticipantYear] = useState('');
+
+  const { signup } = useApp();
+
+  const handleOpenSignup = (role) => {
+    setSignupRole(role);
+    setSignupName('');
+    setSignupEmail('');
+    setSignupPassword('');
+    setSignupError('');
+    setVolunteerSkills('');
+    setSponsorCompany('');
+    setSponsorIndustry('Tech & Software Development');
+    setSponsorBudget('5000');
+    setParticipantCollegeName('');
+    setParticipantCollegeAddress('');
+    setParticipantStudentId('');
+    setParticipantYear('');
+  };
+
+  const handleCloseSignup = () => {
+    setSignupRole(null);
+  };
+
+  const handleSignupSubmit = async (e) => {
+    e.preventDefault();
+    setSignupError('');
+    setSignupLoading(true);
+
+    try {
+      let profileData = {};
+      if (signupRole === 'volunteer') {
+        profileData = {
+          skills: volunteerSkills.split(',').map(s => s.trim()).filter(Boolean)
+        };
+      } else if (signupRole === 'sponsor') {
+        profileData = {
+          company: sponsorCompany,
+          industry: sponsorIndustry,
+          budget: Number(sponsorBudget) || 0
+        };
+      } else if (signupRole === 'participant') {
+        profileData = {
+          collegeName: participantCollegeName,
+          collegeAddress: participantCollegeAddress,
+          studentId: participantStudentId,
+          year: participantYear
+        };
+      }
+
+      await signup(signupName, signupEmail, signupPassword, signupRole, profileData);
+      
+      // Redirect to respective dashboard on success
+      const dashboards = {
+        organizer: '/dashboard/organizer',
+        volunteer: '/dashboard/volunteer',
+        sponsor: '/dashboard/sponsor',
+        participant: '/dashboard/participant'
+      };
+      navigate(dashboards[signupRole]);
+    } catch (err) {
+      setSignupError(err.message || 'Registration failed.');
+    } finally {
+      setSignupLoading(false);
+    }
+  };
+
+  // ──────────────────────────────────────────────────────────────────────────
   // PUBLIC CERTIFICATE VERIFIER STATE & ACTION
   // ──────────────────────────────────────────────────────────────────────────
   const [publicVerifyCode, setPublicVerifyCode] = useState('');
@@ -413,15 +498,15 @@ export default function LandingPage() {
               >
                 Sign In
               </Link>
-              <Link
-                to="/login"
+              <button
+                onClick={() => handleOpenSignup('participant')}
                 style={{
                   background: '#ffffff',
                   color: '#000000',
                   fontWeight: '700',
                   padding: '9px 18px',
                   borderRadius: '40px',
-                  textDecoration: 'none',
+                  border: 'none',
                   fontSize: '0.75rem',
                   fontFamily: 'monospace',
                   textTransform: 'uppercase',
@@ -430,13 +515,14 @@ export default function LandingPage() {
                   transition: 'all 0.2s ease',
                   display: 'inline-flex',
                   alignItems: 'center',
-                  justifyContent: 'center'
+                  justifyContent: 'center',
+                  cursor: 'pointer'
                 }}
                 onMouseEnter={e => { e.currentTarget.style.opacity = '0.9'; e.currentTarget.style.transform = 'translateY(-1px)'; }}
                 onMouseLeave={e => { e.currentTarget.style.opacity = '1'; e.currentTarget.style.transform = 'none'; }}
               >
                 Get Started
-              </Link>
+              </button>
             </>
           )}
         </div>
@@ -593,6 +679,47 @@ export default function LandingPage() {
                   <p className="text-med" style={{ fontSize: '0.86rem', lineHeight: 1.6, margin: 0 }}>
                     {portal.description}
                   </p>
+
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                    <button
+                      onClick={() => handleOpenSignup(portal.role)}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        background: '#ffffff',
+                        border: 'none',
+                        borderRadius: '10px',
+                        color: '#000000',
+                        fontSize: '0.78rem',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        transition: 'opacity 0.2s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
+                      onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                    >
+                      Register Account
+                    </button>
+                    <button
+                      onClick={() => navigate(portal.loginPath)}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        background: 'transparent',
+                        border: '1px solid rgba(255, 255, 255, 0.15)',
+                        borderRadius: '10px',
+                        color: '#ffffff',
+                        fontSize: '0.78rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'; }}
+                    >
+                      Sign In
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -704,6 +831,243 @@ export default function LandingPage() {
           ))}
         </div>
       </footer>
+
+      {/* ──────────────────────────────────────────────────────────────────────────
+          SIGN-UP POPUP MODAL WINDOW (FROSTED LIQUID GLASS)
+          ────────────────────────────────────────────────────────────────────────── */}
+      {signupRole && (
+        <div 
+          onClick={handleCloseSignup}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '20px',
+            boxSizing: 'border-box'
+          }}
+        >
+          <div 
+            onClick={e => e.stopPropagation()}
+            style={{
+              width: '100%',
+              maxWidth: '480px',
+              background: 'rgba(10, 10, 12, 0.95)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '28px',
+              padding: '36px',
+              boxSizing: 'border-box',
+              position: 'relative',
+              boxShadow: '0 24px 60px rgba(0, 0, 0, 0.9)',
+              maxHeight: '90vh',
+              overflowY: 'auto'
+            }}
+          >
+            {/* Close button */}
+            <button 
+              onClick={handleCloseSignup}
+              style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                background: 'transparent',
+                border: 'none',
+                color: 'rgba(255, 255, 255, 0.4)',
+                cursor: 'pointer',
+                padding: '4px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.color = '#ffffff'}
+              onMouseLeave={e => e.currentTarget.style.color = 'rgba(255, 255, 255, 0.4)'}
+            >
+              <span style={{ fontSize: '1.4rem', fontWeight: '300' }}>×</span>
+            </button>
+
+            {/* Header */}
+            <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+              <div style={{ fontSize: '0.65rem', color: 'rgba(255, 255, 255, 0.4)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '4px', fontWeight: '700' }}>
+                Join the Ecosystem
+              </div>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: '800', color: '#ffffff', margin: 0, textTransform: 'capitalize' }}>
+                Sign Up as {signupRole}
+              </h2>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleSignupSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Full Name</label>
+                <input 
+                  className="input-glass" 
+                  type="text" 
+                  value={signupName} 
+                  onChange={e => setSignupName(e.target.value)} 
+                  placeholder={signupRole === 'organizer' ? 'Dr. Sarah Jenkins' : signupRole === 'volunteer' ? 'Alice Smith' : signupRole === 'sponsor' ? 'Marcus Vance' : 'John Doe'} 
+                  required 
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Email Address</label>
+                <input 
+                  className="input-glass" 
+                  type="email" 
+                  value={signupEmail} 
+                  onChange={e => setSignupEmail(e.target.value)} 
+                  placeholder={`${signupRole}@platform.com`} 
+                  required 
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Password</label>
+                <input 
+                  className="input-glass" 
+                  type="password" 
+                  value={signupPassword} 
+                  onChange={e => setSignupPassword(e.target.value)} 
+                  placeholder="••••••••" 
+                  required 
+                />
+              </div>
+
+              {/* Role-specific Fields */}
+              {signupRole === 'volunteer' && (
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Skills (comma separated)</label>
+                  <input 
+                    className="input-glass" 
+                    type="text" 
+                    value={volunteerSkills} 
+                    onChange={e => setVolunteerSkills(e.target.value)} 
+                    placeholder="React, CSS, Logistics, Discord" 
+                  />
+                </div>
+              )}
+
+              {signupRole === 'sponsor' && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Company Name</label>
+                    <input 
+                      className="input-glass" 
+                      type="text" 
+                      value={sponsorCompany} 
+                      onChange={e => setSponsorCompany(e.target.value)} 
+                      placeholder="Vanguard Tech Solutions" 
+                      required 
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Industry</label>
+                      <input 
+                        className="input-glass" 
+                        type="text" 
+                        value={sponsorIndustry} 
+                        onChange={e => setSponsorIndustry(e.target.value)} 
+                        placeholder="Tech & AI" 
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Budget ($)</label>
+                      <input 
+                        className="input-glass" 
+                        type="number" 
+                        value={sponsorBudget} 
+                        onChange={e => setSponsorBudget(e.target.value)} 
+                        placeholder="15000" 
+                        required 
+                      />
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {signupRole === 'participant' && (
+                <>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>College Name</label>
+                    <input 
+                      className="input-glass" 
+                      type="text" 
+                      value={participantCollegeName} 
+                      onChange={e => setParticipantCollegeName(e.target.value)} 
+                      placeholder="Harvard University" 
+                      required 
+                    />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Student ID</label>
+                      <input 
+                        className="input-glass" 
+                        type="text" 
+                        value={participantStudentId} 
+                        onChange={e => setParticipantStudentId(e.target.value)} 
+                        placeholder="ID-98242" 
+                        required 
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>Year of Study</label>
+                      <select 
+                        className="input-glass" 
+                        value={participantYear} 
+                        onChange={e => setParticipantYear(e.target.value)} 
+                        required
+                        style={{ background: '#0a0a0c', color: '#ffffff' }}
+                      >
+                        <option value="">Select Year...</option>
+                        <option value="1st Year">1st Year</option>
+                        <option value="2nd Year">2nd Year</option>
+                        <option value="3rd Year">3rd Year</option>
+                        <option value="4th Year">4th Year</option>
+                        <option value="Postgraduate">Postgraduate</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.72rem', color: 'rgba(255, 255, 255, 0.45)', marginBottom: '5px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>College Address</label>
+                    <input 
+                      className="input-glass" 
+                      type="text" 
+                      value={participantCollegeAddress} 
+                      onChange={e => setParticipantCollegeAddress(e.target.value)} 
+                      placeholder="123 Science Center Rd, Boston" 
+                      required 
+                    />
+                  </div>
+                </>
+              )}
+
+              {signupError && (
+                <div style={{ padding: '8px 12px', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', fontSize: '0.78rem', color: 'rgba(255,255,255,0.5)', background: 'rgba(255,255,255,0.02)' }}>
+                  ✗ {signupError}
+                </div>
+              )}
+
+              <button 
+                type="submit" 
+                className="btn-solid" 
+                disabled={signupLoading}
+                style={{ width: '100%', marginTop: '8px', padding: '12px', borderRadius: '10px', fontSize: '0.85rem', fontWeight: '700' }}
+              >
+                {signupLoading ? 'Registering...' : `Create ${signupRole} Account`}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

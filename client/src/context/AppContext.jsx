@@ -84,7 +84,8 @@ export const AppProvider = ({ children }) => {
     loadData();
   }, [token, isOfflineMode]);
 
-  // Auto-login participant if no session exists and user has not logged out
+  // Auto-login participant deactivated to allow normal signup/login flows
+  /*
   useEffect(() => {
     const performAutoLogin = async () => {
       const loggedOut = sessionStorage.getItem('logged_out') === 'true';
@@ -98,6 +99,7 @@ export const AppProvider = ({ children }) => {
     };
     performAutoLogin();
   }, [token, user]);
+  */
 
   const loadData = async () => {
     setLoading(true);
