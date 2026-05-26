@@ -2,7 +2,7 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 
 const AppContext = createContext();
 
-const API_BASE_URL = 'http://localhost:5000/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://event-management-ecosystem.onrender.com/api';
 
 export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);

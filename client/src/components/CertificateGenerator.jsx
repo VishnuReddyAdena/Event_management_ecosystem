@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { Award, ShieldCheck, Printer, ArrowLeft, Download } from 'lucide-react';
-import { useApp } from '../context/AppContext';
+import { useApp, API_BASE_URL } from '../context/AppContext';
 
 export default function CertificateGenerator({ certificate, onBack }) {
   const { isOfflineMode, showToast } = useApp();
@@ -34,7 +34,7 @@ export default function CertificateGenerator({ certificate, onBack }) {
             <Printer size={16} /> Print View
           </button>
           <a
-            href={isOfflineMode ? '#' : `http://localhost:5000/api/certificates/generate?participantName=${encodeURIComponent(certificate.recipientName)}&eventTitle=${encodeURIComponent(certificate.eventName)}`}
+            href={isOfflineMode ? '#' : `${API_BASE_URL}/certificates/generate?participantName=${encodeURIComponent(certificate.recipientName)}&eventTitle=${encodeURIComponent(certificate.eventName)}`}
             onClick={handleDownloadOfflineWarning}
             className="btn-solid"
             style={{ fontSize: '0.85rem', padding: '6px 16px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '8px' }}
