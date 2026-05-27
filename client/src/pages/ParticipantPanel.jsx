@@ -337,7 +337,7 @@ function ProfileModal({ user, regForm, setRegForm, onClose, showToast }) {
       mockUsers[idx] = updatedUser;
       localStorage.setItem('mock_users', JSON.stringify(mockUsers));
     }
-    localStorage.setItem('mock_user_session', JSON.stringify(updatedUser));
+    sessionStorage.setItem('mock_user_session', JSON.stringify(updatedUser));
 
     setRegForm(prev => ({
       ...prev,
@@ -770,7 +770,7 @@ export default function ParticipantPanel() {
   const { user, setUser, events, registerForEvent, certificates, logout, showToast } = useApp();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [eventFilter, setEventFilter] = useState('All');
+  const [eventFilter, setEventFilter] = useState('All Events');
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [hoveredTab, setHoveredTab] = useState(null);
   const [isBarHovered, setIsBarHovered] = useState(false);

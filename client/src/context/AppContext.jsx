@@ -1,12 +1,12 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
+import { useAuth } from './AuthContext';
 
 const AppContext = createContext();
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://event-management-ecosystem.onrender.com/api';
 
 export const AppProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [token, setToken] = useState(localStorage.getItem('token') || null);
+  const { user, token, setUser, login: authLogin, signup: authSignup, logout: authLogout } = useAuth();
   const [events, setEvents] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [applications, setApplications] = useState([]);
@@ -289,12 +289,9 @@ export const AppProvider = ({ children }) => {
 
     // If local token exists, authenticate the session with corresponding mock user
     if (token) {
-      const savedUser = JSON.parse(localStorage.getItem('mock_user_session'));
+      const savedUser = JSON.parse(sessionStorage.getItem('mock_user_session'));
       if (savedUser) {
         setUser(savedUser);
-      } else {
-        // Fallback default
-        setUser(mockUsers[3]); // Login as participant John Doe by default
       }
     }
   };
@@ -304,32 +301,10 @@ export const AppProvider = ({ children }) => {
     setLoading(true);
     sessionStorage.removeItem('logged_out');
     try {
-      if (!isOfflineMode) {
-        const data = await apiRequest('/auth/login', 'POST', { email, password }, false);
-        setToken(data.token);
-        setUser(data.user);
-        localStorage.setItem('token', data.token);
-        showToast(`Welcome back, ${data.user.name}!`);
-        return data.user;
-      } else {
-        throw new Error('OFFLINE_MODE');
-      }
+      const u = await authLogin(email, password);
+      showToast(`Welcome back, ${u.firstName || u.name}!`);
+      return u;
     } catch (err) {
-      if (err.message === 'OFFLINE_MODE') {
-        const mockUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
-        const matched = mockUsers.find(u => u.email === email);
-        if (matched) {
-          const fakeToken = 'mock_jwt_token_' + matched._id;
-          setToken(fakeToken);
-          setUser(matched);
-          localStorage.setItem('token', fakeToken);
-          localStorage.setItem('mock_user_session', JSON.stringify(matched));
-          showToast(`Welcome (Demo), ${matched.name}!`);
-          return matched;
-        } else {
-          throw new Error('Invalid credentials (Demo Mode). Try volunteer@platform.com');
-        }
-      }
       showToast(err.message, 'error');
       throw err;
     } finally {
@@ -340,56 +315,42 @@ export const AppProvider = ({ children }) => {
   const signup = async (name, email, password, role, profile = {}) => {
     setLoading(true);
     try {
-      if (!isOfflineMode) {
-        const data = await apiRequest('/auth/register', 'POST', { name, email, password, role, profile }, false);
-        setToken(data.token);
-        setUser(data.user);
-        localStorage.setItem('token', data.token);
-        showToast('Account registered successfully!');
-        return data.user;
-      } else {
-        throw new Error('OFFLINE_MODE');
-      }
+      const firstName = name.split(' ')[0] || '';
+      const lastName = name.split(' ').slice(1).join(' ') || '';
+      
+      const timestamp = Date.now();
+      const mockToken = 'mock_jwt_token_' + Math.random().toString(36).substring(2, 11);
+      
+      const msgBuffer = new TextEncoder().encode(`${email}${role}${timestamp}`);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const verificationHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      const userData = {
+        firstName,
+        lastName,
+        email,
+        role,
+        profileData: {
+          bio: profile.bio || '',
+          phone: profile.phone || '',
+          skills: profile.skills || [],
+          company: profile.company || '',
+          industry: profile.industry || '',
+          budget: Number(profile.budget) || 0,
+          collegeName: profile.collegeName || '',
+          collegeAddress: profile.collegeAddress || '',
+          studentId: profile.studentId || '',
+          yearOfStudy: profile.year || ''
+        },
+        token: mockToken,
+        verificationHash
+      };
+
+      const newUser = await authSignup(userData);
+      showToast('Account registered successfully!');
+      return newUser;
     } catch (err) {
-      if (err.message === 'OFFLINE_MODE') {
-        const mockUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
-        if (mockUsers.some(u => u.email === email)) {
-          throw new Error('User already exists in Demo registry.');
-        }
-
-        const newUser = {
-          _id: 'u_' + Math.random().toString(36).substr(2, 9),
-          name,
-          email,
-          role,
-          profile: {
-            bio: profile.bio || '',
-            phone: profile.phone || '',
-            skills: profile.skills || [],
-            company: profile.company || '',
-            industry: profile.industry || '',
-            budget: Number(profile.budget) || 0,
-            points: role === 'volunteer' ? 0 : undefined,
-            performanceScore: role === 'volunteer' ? 100 : undefined,
-            badges: role === 'volunteer' ? [] : undefined,
-            collegeName: profile.collegeName || '',
-            collegeAddress: profile.collegeAddress || '',
-            studentId: profile.studentId || '',
-            yearOfStudy: profile.year || ''
-          }
-        };
-
-        mockUsers.push(newUser);
-        localStorage.setItem('mock_users', JSON.stringify(mockUsers));
-        
-        const fakeToken = 'mock_jwt_token_' + newUser._id;
-        setToken(fakeToken);
-        setUser(newUser);
-        localStorage.setItem('token', fakeToken);
-        localStorage.setItem('mock_user_session', JSON.stringify(newUser));
-        showToast('Registered Demo Account!');
-        return newUser;
-      }
       showToast(err.message, 'error');
       throw err;
     } finally {
@@ -398,11 +359,7 @@ export const AppProvider = ({ children }) => {
   };
 
   const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('mock_user_session');
-    sessionStorage.setItem('logged_out', 'true');
+    authLogout();
     showToast('Logged out successfully.');
   };
 
@@ -678,7 +635,7 @@ export const AppProvider = ({ children }) => {
               if (user && user._id === assigneeId) {
                 const updatedSession = { ...user, profile: u.profile };
                 setUser(updatedSession);
-                localStorage.setItem('mock_user_session', JSON.stringify(updatedSession));
+                sessionStorage.setItem('mock_user_session', JSON.stringify(updatedSession));
               }
               showToast('🎉 Task completed! +15 points rewarded!', 'success');
             }

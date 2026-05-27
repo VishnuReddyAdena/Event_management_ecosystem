@@ -139,16 +139,32 @@ export default function LandingPage() {
     setSignupLoading(true);
 
     try {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(signupEmail)) {
+        throw new Error('Please enter a valid email address.');
+      }
+      if (signupPassword.length < 6) {
+        throw new Error('Password must be at least 6 characters.');
+      }
+      if (!signupName.trim()) {
+        throw new Error('Name is required.');
+      }
+
       let profileData = {};
       if (signupRole === 'volunteer') {
         profileData = {
-          skills: volunteerSkills.split(',').map(s => s.trim()).filter(Boolean)
+          skills: volunteerSkills.split(',').map(s => s.trim()).filter(Boolean),
+          bio: 'CS Sophomore. Active helper.',
+          points: 0,
+          performanceScore: 100,
+          badges: []
         };
       } else if (signupRole === 'sponsor') {
         profileData = {
           company: sponsorCompany,
           industry: sponsorIndustry,
-          budget: Number(sponsorBudget) || 0
+          budget: Number(sponsorBudget) || 0,
+          bio: 'Corporate sponsor.'
         };
       } else if (signupRole === 'participant') {
         profileData = {
@@ -157,18 +173,50 @@ export default function LandingPage() {
           studentId: participantStudentId,
           year: participantYear
         };
+      } else if (signupRole === 'organizer') {
+        profileData = {
+          organization: 'Event Organization Dept',
+          designation: 'Staff Organizer',
+          phone: '+1 555-0199'
+        };
       }
 
-      await signup(signupName, signupEmail, signupPassword, signupRole, profileData);
-      
-      // Redirect to respective dashboard on success
-      const dashboards = {
-        organizer: '/dashboard/organizer',
-        volunteer: '/dashboard/volunteer',
-        sponsor: '/dashboard/sponsor',
-        participant: '/dashboard/participant'
+      // Generate verification hash
+      const timestamp = Date.now();
+      const message = `${signupEmail.toLowerCase()}${signupRole}${timestamp}`;
+      const msgBuffer = new TextEncoder().encode(message);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const hash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+      // Add to simulated mock users
+      const mockUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
+      if (mockUsers.some(u => u.email.toLowerCase() === signupEmail.toLowerCase())) {
+        throw new Error('An account with this email address already exists.');
+      }
+
+      const newUserId = 'u_' + Math.random().toString(36).substring(2, 11);
+      const storeUser = {
+        _id: newUserId,
+        userId: newUserId,
+        name: signupName,
+        firstName: signupName.split(' ')[0] || '',
+        lastName: signupName.split(' ').slice(1).join(' ') || '',
+        email: signupEmail.toLowerCase(),
+        role: signupRole,
+        profile: profileData,
+        profileData: profileData,
+        verificationHash: hash,
+        password: signupPassword,
+        createdAt: new Date().toISOString()
       };
-      navigate(dashboards[signupRole]);
+
+      mockUsers.push(storeUser);
+      localStorage.setItem('mock_users', JSON.stringify(mockUsers));
+
+      showToast('Registration successful! Please sign in.');
+      handleCloseSignup();
+      navigate(`/login/${signupRole}`, { state: { registeredEmail: signupEmail, successHash: hash } });
     } catch (err) {
       setSignupError(err.message || 'Registration failed.');
     } finally {
@@ -680,45 +728,34 @@ export default function LandingPage() {
                     {portal.description}
                   </p>
 
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
-                    <button
-                      onClick={() => handleOpenSignup(portal.role)}
-                      style={{
-                        flex: 1,
-                        padding: '10px',
-                        background: '#ffffff',
-                        border: 'none',
-                        borderRadius: '10px',
-                        color: '#000000',
-                        fontSize: '0.78rem',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        transition: 'opacity 0.2s'
-                      }}
-                      onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-                      onMouseLeave={e => e.currentTarget.style.opacity = '1'}
-                    >
-                      Register Account
-                    </button>
-                    <button
-                      onClick={() => navigate(portal.loginPath)}
-                      style={{
-                        flex: 1,
-                        padding: '10px',
-                        background: 'transparent',
-                        border: '1px solid rgba(255, 255, 255, 0.15)',
-                        borderRadius: '10px',
-                        color: '#ffffff',
-                        fontSize: '0.78rem',
-                        fontWeight: '600',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s'
-                      }}
-                      onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)'; }}
-                      onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)'; }}
-                    >
-                      Sign In
-                    </button>
+                  {/* Meta details list */}
+                  <div style={{
+                    marginTop: 'auto',
+                    paddingTop: '16px',
+                    borderTop: '1px solid rgba(255, 255, 255, 0.08)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px'
+                  }}>
+                    {portal.meta && portal.meta.map((item, index) => (
+                      <div key={index} style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '0.8rem'
+                      }}>
+                        <span className="text-low" style={{ fontSize: '0.74rem', color: 'rgba(255, 255, 255, 0.4)' }}>{item.label}</span>
+                        <span className="text-high" style={{
+                          fontFamily: 'monospace',
+                          fontSize: '0.76rem',
+                          background: 'rgba(255, 255, 255, 0.03)',
+                          border: '1px solid rgba(255, 255, 255, 0.08)',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          color: '#ffffff'
+                        }}>{item.value}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               );

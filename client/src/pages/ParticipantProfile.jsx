@@ -114,7 +114,7 @@ export default function ParticipantProfile() {
       mockUsers[idx] = updatedUser;
       localStorage.setItem('mock_users', JSON.stringify(mockUsers));
     }
-    localStorage.setItem('mock_user_session', JSON.stringify(updatedUser));
+    sessionStorage.setItem('mock_user_session', JSON.stringify(updatedUser));
     showToast('Profile updated successfully!');
     setIsEditing(false);
   };

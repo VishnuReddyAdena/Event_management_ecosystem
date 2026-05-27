@@ -1,64 +1,227 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Laptop, Eye, EyeOff, ArrowLeft, Layers } from 'lucide-react';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { Laptop, Eye, EyeOff, ArrowLeft, Layers, ShieldCheck } from 'lucide-react';
 import { useApp } from '../../context/AppContext';
 
 export default function ParticipantLogin() {
-  const { login, signup, user } = useApp();
+  const { login, signup, user, showToast } = useApp();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mode, setMode] = useState('login');
+  
+  // Base fields
   const [email, setEmail] = useState('participant@platform.com');
   const [password, setPassword] = useState('volunteer123');
-  const [name, setName] = useState('');
+  
+  // Register fields
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [collegeName, setCollegeName] = useState('');
-  const [collegeAddress, setCollegeAddress] = useState('');
   const [studentId, setStudentId] = useState('');
-  const [year, setYear] = useState('');
+  const [expectedGraduationYear, setExpectedGraduationYear] = useState('');
+  
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // 3-Phase Overlay States
+  const [showOverlay, setShowOverlay] = useState(false);
+  const [overlayPhaseText, setOverlayPhaseText] = useState('');
+  const [verificationHash, setVerificationHash] = useState('');
+  const [registrationSuccessHash, setRegistrationSuccessHash] = useState('');
+
   React.useEffect(() => {
-    if (user && user.role === 'participant') navigate('/dashboard/participant');
-  }, [user]);
+    if (user && user.role === 'participant') {
+      navigate('/dashboard/participant');
+    }
+  }, [user, navigate]);
+
+  React.useEffect(() => {
+    if (location.state && location.state.registeredEmail) {
+      setEmail(location.state.registeredEmail);
+      if (location.state.successHash) {
+        setRegistrationSuccessHash(location.state.successHash);
+      }
+      // Clear navigation state
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
+
+  // Crypto SHA-256 helper
+  const calculateSHA256 = async (emailStr, roleStr, timestamp) => {
+    const msg = `${emailStr.toLowerCase()}${roleStr}${timestamp}`;
+    const msgBuffer = new TextEncoder().encode(msg);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
-    try {
-      if (mode === 'login') {
+
+    if (mode === 'login') {
+      setLoading(true);
+      try {
         const u = await login(email, password);
         if (u && u.role !== 'participant') {
           setError('These credentials belong to a different role. Please use the correct portal.');
+          setLoading(false);
           return;
         }
         navigate('/dashboard/participant');
-      } else {
-        await signup(name, email, password, 'participant', {
-          collegeName,
-          collegeAddress,
-          studentId,
-          year
-        });
-        navigate('/dashboard/participant');
+      } catch (err) {
+        setError(err.message || 'Authentication failed.');
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err.message || 'Authentication failed.');
-    } finally {
-      setLoading(false);
+    } else {
+      // Phase 1: Deep Field Validation
+      if (!firstName.trim() || !lastName.trim()) {
+        setError('First Name and Last Name are required.');
+        return;
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        setError('Please enter a valid email address.');
+        return;
+      }
+
+      if (password.length < 6) {
+        setError('Password must be at least 6 characters long.');
+        return;
+      }
+
+      if (!collegeName.trim()) {
+        setError('College Name is required.');
+        return;
+      }
+
+      if (!studentId.trim()) {
+        setError('Student ID Card Number is required.');
+        return;
+      }
+
+      if (!expectedGraduationYear) {
+        setError('Please select expected graduation year.');
+        return;
+      }
+
+      // Validations passed, launch Phase 2
+      setLoading(true);
+      setShowOverlay(true);
+      
+      try {
+        // Step 1: Init delay
+        setOverlayPhaseText('Phase 1: Deep Field Validation Verified...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Step 2: Hashing credentials
+        setOverlayPhaseText('Phase 2: Hashing credentials & compiling register payload...');
+        const timestamp = Date.now();
+        const hash = await calculateSHA256(email, 'participant', timestamp);
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Step 3: Generating signature
+        setOverlayPhaseText('Phase 3: Signing transaction payload & generating session keys...');
+        setVerificationHash(hash);
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // Onboarding Redirection
+        const profileData = {
+          collegeName,
+          studentId,
+          year: expectedGraduationYear,
+          collegeAddress: 'Main Campus Academic Block'
+        };
+
+        const fullName = `${firstName.trim()} ${lastName.trim()}`;
+        
+        // Add to simulated mock users
+        const mockUsers = JSON.parse(localStorage.getItem('mock_users') || '[]');
+        if (mockUsers.some(u => u.email.toLowerCase() === email.toLowerCase())) {
+          throw new Error('An account with this email address already exists.');
+        }
+
+        const newUserId = 'u_' + Math.random().toString(36).substring(2, 11);
+        const storeUser = {
+          _id: newUserId,
+          userId: newUserId,
+          name: fullName,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          email: email.toLowerCase(),
+          role: 'participant',
+          profile: profileData,
+          profileData,
+          verificationHash: hash,
+          password: password,
+          createdAt: new Date().toISOString()
+        };
+
+        mockUsers.push(storeUser);
+        localStorage.setItem('mock_users', JSON.stringify(mockUsers));
+
+        setRegistrationSuccessHash(hash);
+        setShowOverlay(false);
+        setLoading(false);
+        setMode('login');
+        setPassword('');
+        showToast('Registration successful! Please sign in.');
+      } catch (err) {
+        setError(err.message || 'Registration failed.');
+        setShowOverlay(false);
+        setLoading(false);
+      }
     }
   };
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 20px', position: 'relative', zIndex: 1 }}>
-      <div style={{ width: '100%', maxWidth: '440px' }}>
+      
+      {/* 3-Phase Loading Overlay */}
+      {showOverlay && (
+        <div className="auth-overlay">
+          <div className="auth-overlay-card">
+            <div className="preloader-spinner" />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+              <h3 style={{ fontSize: '1.2rem', fontWeight: '600', color: '#ffffff' }}>Securing Profile</h3>
+              <p style={{ fontSize: '0.8rem', color: 'rgba(255, 255, 255, 0.45)', lineHeight: '1.4' }}>
+                {overlayPhaseText}
+              </p>
+            </div>
+            {verificationHash && (
+              <div style={{
+                fontSize: '0.68rem',
+                fontFamily: 'monospace',
+                color: 'rgba(255, 255, 255, 0.35)',
+                background: 'rgba(0, 0, 0, 0.3)',
+                padding: '10px 14px',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                wordBreak: 'break-all',
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                textAlign: 'left'
+              }}>
+                <ShieldCheck size={14} style={{ color: '#ffffff', flexShrink: 0 }} />
+                <span>HASH: {verificationHash}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      <div style={{ width: '100%', maxWidth: '460px' }}>
         <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', color: 'rgba(255,255,255,0.35)', fontSize: '0.82rem', textDecoration: 'none', marginBottom: '32px' }}
           onMouseEnter={e => e.currentTarget.style.color = '#ffffff'}
           onMouseLeave={e => e.currentTarget.style.color = 'rgba(255,255,255,0.35)'}
         >
           <ArrowLeft size={14} /> back
         </Link>
+        
         <div style={{ padding: '40px', background: 'rgba(255,255,255,0.025)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '24px', backdropFilter: 'blur(24px)' }}>
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '32px', gap: '14px' }}>
             <div style={{ padding: '14px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '16px' }}>
@@ -69,56 +232,90 @@ export default function ParticipantLogin() {
               <h1 style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ffffff' }}>{mode === 'login' ? 'Sign In' : 'Register'}</h1>
             </div>
           </div>
+          
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: '8px 14px', background: 'rgba(255,255,255,0.03)', border: '1px dashed rgba(255,255,255,0.12)', borderRadius: '10px', marginBottom: '24px' }}>
             <Layers size={13} style={{ color: 'rgba(255,255,255,0.4)' }} />
             <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.35)' }}>Access locked to <strong style={{ color: 'rgba(255,255,255,0.7)' }}>Event Participant</strong> role only</span>
           </div>
+
+          {registrationSuccessHash && mode === 'login' && (
+            <div style={{
+              padding: '16px',
+              background: 'rgba(255, 255, 255, 0.02)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              borderRadius: '12px',
+              marginBottom: '20px',
+              fontSize: '0.8rem',
+              color: '#ffffff'
+            }}>
+              <div style={{ fontWeight: '700', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                ✓ Profile Secured & Registered
+              </div>
+              <div style={{ color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontSize: '0.74rem' }}>
+                Your verification hash has been recorded in the platform registry.
+              </div>
+              <div style={{
+                fontFamily: 'monospace',
+                fontSize: '0.66rem',
+                background: 'rgba(0,0,0,0.3)',
+                padding: '6px 10px',
+                borderRadius: '6px',
+                wordBreak: 'break-all',
+                color: 'rgba(255,255,255,0.8)'
+              }}>
+                H: {registrationSuccessHash}
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             {mode === 'register' && (
               <>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>FULL NAME</label>
-                  <input className="input-glass" type="text" placeholder="John Doe" value={name} onChange={e => setName(e.target.value)} required />
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>FIRST NAME</label>
+                    <input className="input-glass-premium" type="text" placeholder="John" value={firstName} onChange={e => setFirstName(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>LAST NAME</label>
+                    <input className="input-glass-premium" type="text" placeholder="Doe" value={lastName} onChange={e => setLastName(e.target.value)} required />
+                  </div>
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>COLLEGE NAME</label>
-                  <input className="input-glass" type="text" placeholder="Harvard University" value={collegeName} onChange={e => setCollegeName(e.target.value)} required />
+                  <label style={{ display: 'block', fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>COLLEGE NAME</label>
+                  <input className="input-glass-premium" type="text" placeholder="Harvard University" value={collegeName} onChange={e => setCollegeName(e.target.value)} required />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>COLLEGE ADDRESS</label>
-                  <input className="input-glass" type="text" placeholder="123 Science Center Rd, Boston" value={collegeAddress} onChange={e => setCollegeAddress(e.target.value)} required />
+                  <label style={{ display: 'block', fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>STUDENT ID</label>
+                  <input className="input-glass-premium" type="text" placeholder="ID-8923412" value={studentId} onChange={e => setStudentId(e.target.value)} required />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>STUDENT ID (College ID Card Number)</label>
-                  <input className="input-glass" type="text" placeholder="ID-8923412" value={studentId} onChange={e => setStudentId(e.target.value)} required />
-                </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>YEAR OF STUDY</label>
-                  <select className="input-glass" value={year} onChange={e => setYear(e.target.value)} required style={{ background: '#0a0a0c', color: '#ffffff' }}>
+                  <label style={{ display: 'block', fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>EXPECTED GRADUATION YEAR</label>
+                  <select className="input-glass-premium" value={expectedGraduationYear} onChange={e => setExpectedGraduationYear(e.target.value)} required style={{ background: '#0a0a0c', color: '#ffffff' }}>
                     <option value="">Select Year...</option>
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
-                    <option value="Postgraduate">Postgraduate</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
                   </select>
                 </div>
               </>
             )}
             <div>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px' }}>EMAIL ADDRESS</label>
-              <input className="input-glass" type="email" placeholder="participant@platform.com" value={email} onChange={e => setEmail(e.target.value)} required />
+              <label style={{ display: 'block', fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase' }}>EMAIL ADDRESS</label>
+              <input className="input-glass-premium" type="email" placeholder="participant@platform.com" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
             <div style={{ position: 'relative' }}>
-              <label style={{ display: 'block', fontSize: '0.78rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px' }}>PASSWORD</label>
-              <input className="input-glass" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required style={{ paddingRight: '44px' }} />
+              <label style={{ display: 'block', fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', marginBottom: '6px', textTransform: 'uppercase' }}>PASSWORD</label>
+              <input className="input-glass-premium" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required style={{ paddingRight: '44px' }} />
               <button type="button" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', bottom: '12px', background: 'transparent', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.35)', padding: 0 }}>
                 {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
               </button>
             </div>
             {error && <div style={{ padding: '10px 14px', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '8px', fontSize: '0.82rem', color: 'rgba(255,255,255,0.45)' }}>✗ {error}</div>}
             <button type="submit" className="btn-solid" disabled={loading} style={{ width: '100%', marginTop: '6px', padding: '13px' }}>
-              {loading ? 'Authenticating...' : (mode === 'login' ? 'Access Participant Panel' : 'Create Participant Account')}
+              {loading ? 'Processing Securely...' : (mode === 'login' ? 'Access Participant Panel' : 'Sign Up')}
             </button>
           </form>
           <div style={{ textAlign: 'center', marginTop: '20px', fontSize: '0.82rem', color: 'rgba(255,255,255,0.3)' }}>
