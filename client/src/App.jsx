@@ -40,6 +40,7 @@ export default function App() {
             <Route path="/login/volunteer" element={<VolunteerLogin />} />
             <Route path="/login/participant" element={<ParticipantLogin />} />
             <Route path="/login/sponsor" element={<SponsorLogin />} />
+            <Route path="/login/sponser" element={<Navigate to="/login/sponsor" replace />} />
 
             {/* Protected Dashboards */}
             <Route
@@ -66,6 +67,7 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route path="/dashboard/sponser" element={<Navigate to="/dashboard/sponsor" replace />} />
             <Route
               path="/dashboard/participant"
               element={
